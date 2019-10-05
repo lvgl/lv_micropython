@@ -42,19 +42,19 @@ You need Emscripten installed and working. There are lots of guides about that o
 
 Once you have Emscripten working, you also need to install the `clang` package:
 1. `cd <path to emsdk>`
-2. `./emsdk install clang-e<sdk version>-64bit # for example: clang-e1.30.0-64bit`
-3. `./emsdk activate clang-e<sdk version>-64bit`
+2. Make sure you have installed `cmake`, and then `./emsdk install clang-tag-e<sdk version>-64bit # for example: clang-tag-e1.38.31-64bit` (You can use `./emsdk list` to show the available packages)
+3. `./emsdk activate clang-tag-e<sdk version>-64bit`
 
 Now you can build the JavaScript port.
 
 1. `cd <path to lv_micropython>`
-2. `. ./emsdk_env.sh`
+2. `source <path to emsdk>/emsdk_env.sh`
 3. `git checkout lvgl_javascript`
 4. `git submodule update --init --recursive` (*can be very important!*)
-5. `cd ports/javascript`
-6. `make`
-7. Run an HTTP server that serves files from the current directory.
-8. Browse to `/lvgl_editor.html` on the HTTP Server.
+5.  Build the MicroPython cross-compiler: `make -C mpy-cross`
+6. `cd ports/javascript`
+7. `make`
+8. Run an HTTP server that serves files from the current directory, and then browse to `/lvgl_editor.html` on the HTTP Server.(Or you can run the `build/micropython.js` in `node`)
 
 
 
