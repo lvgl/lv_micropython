@@ -86,9 +86,18 @@ function wasm_file_open(url, cachefile){
     }
 
     try {
-        if (url[0]==":")
-            url = url.substr(1)
-        else {
+        if (url[0]==":"){
+            url = url.substr(1);
+        } else if(url.indexOf(":") == -1){ // no ":" - might be path relative to script
+            let external_path = new URL(window.top.location.href).searchParams.get("script");
+            if(external_path !== undefined && external_path !== null){
+                url = new URL(url, external_path).href;
+                console.log(url);
+                if(window.urls.cors){
+                    url = window.urls.cors(url);
+                }
+            }
+        } else {
             // [TODO:do some tests there for your CORS integration]
             if (window.urls.cors)
                 url = window.urls.cors(url)

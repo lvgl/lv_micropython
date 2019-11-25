@@ -209,11 +209,16 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     const char *fname = mp_obj_str_get_str(fid);
     int fd=0;
 
-    if (can_online)
-        fd = wasm_file_open( fname );
+    // first try to open local file
+    fd = open(fname, mode_x | mode_rw, 0644);
 
-    if (!fd)
-        fd = open(fname, mode_x | mode_rw, 0644);
+    // if local file doesn't exist - try to open remote
+    if (fd == -1 && can_online){
+        fd = wasm_file_open( fname );
+        if(!fd){
+            mp_raise_OSError(errno);
+        }
+    }
 
     if (fd == -1) {
         mp_raise_OSError(errno);
