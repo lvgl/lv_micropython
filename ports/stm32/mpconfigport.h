@@ -41,6 +41,8 @@
 #endif
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
+//testing branching
+
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #ifndef MICROPY_EMIT_THUMB
