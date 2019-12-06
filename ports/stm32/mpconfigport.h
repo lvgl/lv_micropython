@@ -86,6 +86,8 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_PY_LVGL             (1)
 
+// this is for testing
+
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
