@@ -460,7 +460,8 @@ void EXTI2_IRQHandler(void) {
 
 void EXTI3_IRQHandler(void) {
     IRQ_ENTER(EXTI3_IRQn);
-    Handle_EXTI_Irq(3);
+    //Handle_EXTI_Irq(3);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
     IRQ_EXIT(EXTI3_IRQn);
 }
 

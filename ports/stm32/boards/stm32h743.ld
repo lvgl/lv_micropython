@@ -12,6 +12,8 @@ MEMORY
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
     RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K    /* AXI SRAM */    
     RAM_D2 (xrw)    : ORIGIN = 0x30000000, LENGTH = 288K
+    SDRAM (xrw)     : ORIGIN = 0xC0000000, LENGTH = 6M
+    VSDRAM (xrw)    : ORIGIN = 0xC0600000, LENGTH = 2048K  
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
@@ -36,4 +38,26 @@ SECTIONS
         . = ABSOLUTE(0x30040000);
         *eth.o*(.bss.eth_dma)
     } >RAM_D2
+
+    .extsdram (NOLOAD) :
+    {
+        _extsdram = . ;
+        extsdram = . ;
+        PROVIDE (extsdram = .);
+        PROVIDE (_extsdram = .);
+        *(.extsdram .extsdram.*)
+        *(.EXTSDRAM)
+        . = ALIGN(4);
+    } >SDRAM
+    
+    .videosdram (NOLOAD) :
+    {
+        _videosdram = . ;
+        videosdram = . ;
+        PROVIDE (videosdram = .);
+        PROVIDE (_videosdram = .);
+        *(.extsdram .videosdram.*)
+        *(.VIDEOSDRAM)
+        . = ALIGN(4);
+    } >VSDRAM
 }

@@ -203,7 +203,7 @@
 #endif
 //#define MICROPY_PY_LVGL             (1)
 #define MICROPY_PY_LODEPNG          (1)
-#define MICROPY_PY_RK043FN48H       (1)
+#define MICROPY_PY_TFTLCD           (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -250,14 +250,21 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lodepng;
+extern const struct _mp_obj_module_t mp_module_modtest;
+extern const struct _mp_obj_module_t mp_module_camera;
 
 #if MICROPY_PY_LVGL
 #define MICROPY_PORT_LVGL_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
-
 #else
 #define MICROPY_PORT_LVGL_DEF
 #endif
+
+#if MICROPY_HW_HAS_CAMERA
+#define CAMERA_MODULE    { MP_ROM_QSTR(MP_QSTR_camera), MP_ROM_PTR(&mp_module_camera) }, 
+#else
+#define CAMERA_MODULE
+#endif  //  MICROPY_HW_HAS_CAMERA
 
 #if MICROPY_PY_LODEPNG
 #define MICROPY_PORT_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
@@ -298,7 +305,9 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
     NETWORK_BUILTIN_MODULE \
     MICROPY_PORT_LVGL_DEF \
     MICROPY_PORT_LODEPNG_DEF \
+    CAMERA_MODULE \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
+    { MP_ROM_QSTR(MP_QSTR_modtest), MP_ROM_PTR(&mp_module_modtest) }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
@@ -321,10 +330,10 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #define LV_ROOTS
 #endif
 
-#if MICROPY_PY_RK043FN48H
-#define RK043FN48H_ROOTS void* rk043fn48h_fb[2];
+#if MICROPY_PY_TFTLCD
+#define TFTLCD_ROOTS void* tftlcd_fb[2];
 #else
-#define RK043FN48H_ROOTS
+#define TFTLCD_ROOTS
 #endif
 
 #if MICROPY_SSL_MBEDTLS
@@ -351,7 +360,7 @@ struct _mp_bluetooth_btstack_root_pointers_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
     void *mp_lv_user_data; \
-    RK043FN48H_ROOTS \
+    TFTLCD_ROOTS \
     const char *readline_hist[8]; \
     \
     mp_obj_t pyb_hid_report_desc; \
