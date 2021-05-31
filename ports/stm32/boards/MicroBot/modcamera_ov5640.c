@@ -32,14 +32,11 @@ STATIC mp_obj_t camera_ov5640_init()
 {
 
     BSP_LED_GPIO_Init();
-    BSP_LED_BLUE(0);
-    BSP_LED_RED(0);
-    BSP_LED_GREEN(0);
     
     uint16_t ret_val = 0;
 
     ret_val = BSP_CAMERA_Init();
-    printf("Camera INIT: %d \n ", ret_val);
+    printf("Camera INIT: %x \n ", ret_val);
  
     return mp_const_none;
 }
@@ -73,9 +70,15 @@ STATIC mp_obj_t camera_ov5640_make_new(const mp_obj_type_t *type, size_t n_args,
 	// check arguments
 	mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
 
+    BSP_LED_GPIO_Init();
+    
+    mp_int_t ret_val = 0;
+
+    ret_val = BSP_CAMERA_Init();
+ 
     ov5640_obj_t *self = m_new_obj(ov5640_obj_t);
     self -> base.type = &camera_ov5640_type;
-    self -> camera_id = 0;
+    self -> camera_id = ret_val;
     return MP_OBJ_FROM_PTR(self);
 }
 

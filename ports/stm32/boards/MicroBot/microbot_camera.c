@@ -268,7 +268,6 @@ int32_t BSP_CAMERA_Init(void)
 
   ret = OV5640_Probe(Ov5640_Ctx.Resolution, Ov5640_Ctx.PixelFormat);
  
-   BSP_LED_GREEN(1);
 
   return ret;
 }
@@ -359,7 +358,7 @@ int32_t BSP_CAMERA_Start(uint32_t Mode, uint32_t FB_Address)
 
 void DCMI_IRQHandler(void)
 {
-    BSP_LED_GREEN(1);
+    //BSP_LED_GREEN(1);
 
     HAL_DCMI_IRQHandler(&hcamera_dcmi);
 }
@@ -370,7 +369,7 @@ void HAL_DCMI_VsyncEventCallback(DCMI_HandleTypeDef *hdcmi)
 
   UNUSED(hdcmi);
 
-  BSP_LED_RED(1);
+  //BSP_LED_RED(1);
   BSP_CAMERA_Suspend();
 
   BSP_CAMERA_Start(DCMI_MODE_CONTINUOUS, (uint32_t)ov5640_fb); 
@@ -1176,7 +1175,6 @@ static void DCMI_MspDeInit(DCMI_HandleTypeDef *hdcmi)
 
 void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
 {
-  BSP_LED_RED(1);
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(dcmiHandle->Instance==DCMI)
