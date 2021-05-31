@@ -10,8 +10,9 @@ The update file list is in the following:
 Version 2.0
 增加LVGL的支持。
 1 直接使用lv_micropython版本
-2 将lv_bindings_micropython下载下来，copy到lv_micropython/lib目录
-3 改lv_bindings目录下的drivers/stm32下面的液晶和触摸屏驱动
+2 mpconfigboard.mk文件中，增加LVGL库的定义
+3 改lv_bindings目录下的drivers/stm32下面的液晶和触摸屏驱动，
+其中触摸屏驱动采用的是中断模式，而不是轮询模式，所以需要修改ports/stm32/stm32_it.c文件.
 4 为了支持STM32H7xx，要修改port/stm32/i2c.c文件，增加对应的i2c控制部分代码
 5 为了使用LVGL库，mpconfigboard.mk文件里增加：MICROPY_PY_LVGL = 1
 6 在ports/stm32/boards/stm32h7xx_hal_conf_base.h文件中，增加：
