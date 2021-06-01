@@ -35,9 +35,21 @@ STATIC mp_obj_t camera_ov5640_init()
     
     uint16_t ret_val = 0;
 
+    uint32_t kk;
+
+    //Video buffer init.
+    for(kk = 0; kk < 320*120; kk ++)
+    {
+        ov5640_fb[kk] = 0x00000000;
+    }
+
     ret_val = BSP_CAMERA_Init();
     printf("Camera INIT: %x \n ", ret_val);
  
+    printf("video buffer: \n");
+    for(kk = 0; kk < 30; kk ++)
+      printf("0x%lx ", ov5640_fb[kk]);
+
     return mp_const_none;
 }
 
@@ -50,6 +62,13 @@ STATIC mp_obj_t camera_ov5640_start(size_t n_args, const mp_obj_t *pos_args, mp_
     /* Your code start! */
     ret_val = BSP_CAMERA_Start(DCMI_MODE_CONTINUOUS, (uint32_t)ov5640_fb);
     /* Your code end! */
+    printf("ret_val: %d \n", ret_val);
+
+    uint32_t kk;
+    printf("video buffer: \n");
+    for(kk = 100; kk < 130; kk ++)
+       printf("0x%lx ", ov5640_fb[kk]);
+
     //lv_ex_canvas_1();
     return mp_obj_new_int(ret_val); 
 }
