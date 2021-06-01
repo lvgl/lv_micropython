@@ -250,7 +250,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lodepng;
-extern const struct _mp_obj_module_t mp_module_modtest;
 extern const struct _mp_obj_module_t mp_module_camera;
 
 #if MICROPY_PY_LVGL
@@ -307,7 +306,6 @@ extern const struct _mp_obj_module_t mp_module_camera;
     MICROPY_PORT_LODEPNG_DEF \
     CAMERA_MODULE \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
-    { MP_ROM_QSTR(MP_QSTR_modtest), MP_ROM_PTR(&mp_module_modtest) }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
