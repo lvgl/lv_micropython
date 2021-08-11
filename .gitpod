@@ -11,7 +11,7 @@ tasks:
       xrandr --fb 500x500
       make -j $(nproc) -C mpy-cross VARIANT=dev DEBUG=1
       make -j $(nproc) -C ports/unix VARIANT=dev DEBUG=1
-    command: |      
+    command: |
       ports/unix/micropython-dev -i lib/lv_bindings/examples/advanced_demo.py
 vscode:
   extensions:
