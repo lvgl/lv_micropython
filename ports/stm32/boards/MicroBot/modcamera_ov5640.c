@@ -12,7 +12,7 @@ typedef struct _camera_ov5640_obj_t {
 }ov5640_obj_t;
 
 #define __ATTR_VIDEOBUFFER  __attribute__ ((section(".videosdram"))) __attribute__ ((aligned (4)))
-uint32_t ov5640_fb[320 * 240 /2]  __ATTR_VIDEOBUFFER;
+uint32_t ov5640_fb[320 * 240 /2]   __ATTR_VIDEOBUFFER;
 
 STATIC mp_obj_t camera_ov5640_deinit() 
 {
@@ -35,24 +35,20 @@ STATIC mp_obj_t camera_ov5640_init()
     
     uint16_t ret_val = 0;
 
-    uint32_t kk;
-
-    //Video buffer init.
-    for(kk = 0; kk < 320*120; kk ++)
-    {
-        ov5640_fb[kk] = 0x00000000;
-    }
-
     ret_val = BSP_CAMERA_Init();
     printf("Camera INIT: %x \n ", ret_val);
- 
-    printf("video buffer: \n");
-    for(kk = 0; kk < 30; kk ++)
-      printf("0x%lx ", ov5640_fb[kk]);
 
     return mp_const_none;
 }
 
+STATIC mp_obj_t camera_ov5640_showdata() 
+{
+  printf("video buffer: \n");
+
+  BSP_CAMERA_BufferShow();
+
+  return mp_const_none;
+}
 
 //def camera_start()
 STATIC mp_obj_t camera_ov5640_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -60,14 +56,9 @@ STATIC mp_obj_t camera_ov5640_start(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_int_t ret_val = 0;
 
     /* Your code start! */
-    ret_val = BSP_CAMERA_Start(DCMI_MODE_CONTINUOUS, (uint32_t)ov5640_fb);
+    ret_val = BSP_CAMERA_Start(CAMERA_MODE_CONTINUOUS, (uint32_t)ov5640_fb);
     /* Your code end! */
     printf("ret_val: %d \n", ret_val);
-
-    uint32_t kk;
-    printf("video buffer: \n");
-    for(kk = 100; kk < 130; kk ++)
-       printf("0x%lx ", ov5640_fb[kk]);
 
     //lv_ex_canvas_1();
     return mp_obj_new_int(ret_val); 
@@ -75,6 +66,7 @@ STATIC mp_obj_t camera_ov5640_start(size_t n_args, const mp_obj_t *pos_args, mp_
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(camera_ov5640_deinit_obj, camera_ov5640_deinit);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(camera_ov5640_init_obj, camera_ov5640_init);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(camera_ov5640_showdata_obj, camera_ov5640_showdata);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(camera_ov5640_start_obj, 0, camera_ov5640_start);
 
 STATIC void camera_ov5640_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) 
@@ -106,6 +98,7 @@ STATIC const mp_rom_map_elem_t camera_ov5640_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR__name__), MP_ROM_QSTR(MP_QSTR_ov5640) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&camera_ov5640_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&camera_ov5640_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_showdata), MP_ROM_PTR(&camera_ov5640_showdata_obj) },
     { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&camera_ov5640_start_obj) },
 };
 

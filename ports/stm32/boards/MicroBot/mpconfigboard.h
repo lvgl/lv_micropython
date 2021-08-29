@@ -12,6 +12,7 @@
 #define MICROPY_HW_ENABLE_USB           (1)
 #define MICROPY_HW_ENABLE_SDCARD        (1)
 #define MICROPY_HW_ENABLE_ADC		    (1)
+#define MICROPY_HW_ENABLE_DCMI          (1)
 #define MICROPY_HW_HAS_SWITCH           (0)
 #define MICROPY_HW_HAS_FLASH            (1)
 #define MICROPY_FATFS_EXFAT             (1)

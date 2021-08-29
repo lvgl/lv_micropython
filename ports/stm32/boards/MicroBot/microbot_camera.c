@@ -201,7 +201,28 @@ static int32_t OV5640_Probe(uint32_t Resolution, uint32_t PixelFormat);
   */
 
 
+void BSP_CAMERA_BufferClear(void)
+{
+  uint32_t index;
 
+  for(index = 0; index < 320*240/2; index ++)
+  {
+      ov5640_fb[index] = 0x00000000;
+  }
+
+}
+
+void BSP_CAMERA_BufferShow(void)
+{
+
+  uint32_t index;
+
+  for(index = 0; index < 320*240/2; index ++)
+  {
+      printf("0x%lx ", ov5640_fb[index]);
+  }
+
+}
 
 int32_t BSP_CAMERA_GPIO_Init(void)
 {
@@ -261,13 +282,13 @@ int32_t BSP_CAMERA_Init(void)
       return ret;
   }
 
-  //DCMI_MspInit(&hcamera_dcmi);
 
   Ov5640_Ctx.Resolution = CAMERA_R320x240;
   Ov5640_Ctx.PixelFormat = CAMERA_PF_RGB565;
 
   ret = OV5640_Probe(Ov5640_Ctx.Resolution, Ov5640_Ctx.PixelFormat);
  
+  //BSP_CAMERA_BufferClear();
 
   return ret;
 }
@@ -359,24 +380,40 @@ int32_t BSP_CAMERA_Start(uint32_t Mode, uint32_t FB_Address)
 void DCMI_IRQHandler(void)
 {
     //BSP_LED_GREEN(1);
-
     HAL_DCMI_IRQHandler(&hcamera_dcmi);
 }
 
 //捕获到一帧图像处理函数
+
 void HAL_DCMI_VsyncEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
 
   UNUSED(hdcmi);
 
-  //BSP_LED_RED(1);
+  BSP_LED_GREEN(1);
+
   BSP_CAMERA_Suspend();
 
   BSP_CAMERA_Start(DCMI_MODE_CONTINUOUS, (uint32_t)ov5640_fb); 
   //LCD_LL_Convert_RGB565ToARGB8888((uint32_t *)cam_fb, (uint32_t*)(hLtdcHandler.LayerCfg[ActiveLayer].FBStartAdress), 320, 240);
+  //BSP_CAMERA_SetPixelFormat(CAMERA_PF_RGB565);
+
   BSP_CAMERA_Resume();
 
 }
+
+/*
+void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
+{
+  UNUSED(hdcmi);
+  
+  BSP_CAMERA_Suspend();
+  BSP_LED_GREEN(1);
+  BSP_CAMERA_Resume();
+
+
+}
+*/
 /*
 void lv_ex_canvas_1(void)
 {
@@ -1263,18 +1300,27 @@ void HAL_DCMI_MspInit(DCMI_HandleTypeDef* dcmiHandle)
 		hdma_handler.Init.MemBurst = DMA_MBURST_INC4;
 		hdma_handler.Init.PeriphBurst = DMA_PBURST_SINGLE;  
     
-    HAL_DMA_Init(&hdma_handler);
 
     __HAL_LINKDMA(dcmiHandle,DMA_Handle,hdma_handler);
-
+    
     /* DCMI interrupt Init */
     HAL_NVIC_SetPriority(DCMI_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DCMI_IRQn);
+
     HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+    
+    if (HAL_DMA_Init(dcmiHandle->DMA_Handle) != HAL_OK)
+    {
+      BSP_LED_RED(1);
+    }
+
+    BSP_LED_BLUE(1);
   /* USER CODE BEGIN DCMI_MspInit 1 */
-    //BSP_CAMERA_Start(DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_fb);
-		//HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t)dcmi_data_buf, OV5640_XSize*OV5640_YSize/2);
+    //HAL_DCMI_Stop(dcmiHandle);
+    //HAL_DCMI_Start_DMA(dcmiHandle, DCMI_MODE_CONTINUOUS, (uint32_t)ov5640_fb, 320*240/2);
+
+    
   /* USER CODE END DCMI_MspInit 1 */
   }
 }

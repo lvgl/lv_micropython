@@ -222,6 +222,8 @@ int32_t BSP_CAMERA_PwrDown(void);
 /* These functions can be modified in case the current settings (e.g. DMA stream)
    need to be changed for specific application needs */
 HAL_StatusTypeDef MX_DCMI_Init(DCMI_HandleTypeDef* hdcmi);
+void BSP_CAMERA_BufferClear(void);
+void BSP_CAMERA_BufferShow(void);
 /**
   * @}
   */
