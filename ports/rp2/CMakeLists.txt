@@ -104,6 +104,8 @@ set(MICROPY_SOURCE_PORT
     uart.c
 )
 
+include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
@@ -125,6 +127,7 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
+    ${LV_SRC}
 )
 
 set(PICO_SDK_COMPONENTS
@@ -165,12 +168,36 @@ set(PICO_SDK_COMPONENTS
 set(MICROPY_CROSS_FLAGS -march=armv7m)
 set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
+set(LV_BINDINGS_DIR ${MICROPY_DIR}/lib/lv_bindings)
+set(LV_DIR ${LV_BINDINGS_DIR}/lvgl)
+
+# set(MICROPY_SOURCE_LVGL_GEN
+#     ${LV_BINDINGS_DIR}/gen/lv_mpy.c
+# )
+
+# include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
+include_directories( 
+    ${LV_BINDINGS_DIR}
+    ${LV_BINDINGS_DIR}/scr/lv_core
+    ${LV_BINDINGS_DIR}/scr/lv_draw
+    ${LV_BINDINGS_DIR}/scr/lv_font
+    ${LV_BINDINGS_DIR}/scr/lv_gpu
+    ${LV_BINDINGS_DIR}/scr/lv_hal
+    ${LV_BINDINGS_DIR}/scr/lv_misc
+    ${LV_BINDINGS_DIR}/scr/lv_themes
+    ${LV_BINDINGS_DIR}/scr/lv_whidgets
+)
+file(GLOB_RECURSE MICROPY_SOURCE_LVGL ${MICROPY_DIR}/lib/lv_bindings/lvgl/src/*.c)
+
+
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_PORT}
+    ${LV_SRC}
+    ${MICROPY_SOURCE_LVGL}
 )
 
 target_link_libraries(${MICROPY_TARGET} usermod)
@@ -181,11 +208,17 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
     ${MICROPY_BOARD_DIR}
     "${PROJECT_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}"
+    ${LV_INCLUDE}
 )
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
+    # prevents errors like this in LVGL:
+    # /home/eudoxos/build/lv_micropython/ports/rp2/build-PICO/lv_mp.c:29316:16: error: 'lv_style_transition_dsc_t_path_xcb_callback' defined but not used [-Werror=unused-function]
+    # 29316 | STATIC int32_t lv_style_transition_dsc_t_path_xcb_callback(const struct _lv_anim_t * arg0)
+    #       |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -Wno-unused-function
 )
 
 target_compile_definitions(${MICROPY_TARGET} PRIVATE
@@ -229,3 +262,5 @@ endforeach()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+all_lv_bindings()
