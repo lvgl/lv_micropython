@@ -104,7 +104,9 @@ set(MICROPY_SOURCE_PORT
     uart.c
 )
 
-include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+if(NOT CMAKE_BUILD_EARLY_EXPANSION)
+    include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
+endif()
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
@@ -171,23 +173,8 @@ set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 set(LV_BINDINGS_DIR ${MICROPY_DIR}/lib/lv_bindings)
 set(LV_DIR ${LV_BINDINGS_DIR}/lvgl)
 
-# set(MICROPY_SOURCE_LVGL_GEN
-#     ${LV_BINDINGS_DIR}/gen/lv_mpy.c
-# )
-
-# include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
-include_directories( 
-    ${LV_BINDINGS_DIR}
-    ${LV_BINDINGS_DIR}/scr/lv_core
-    ${LV_BINDINGS_DIR}/scr/lv_draw
-    ${LV_BINDINGS_DIR}/scr/lv_font
-    ${LV_BINDINGS_DIR}/scr/lv_gpu
-    ${LV_BINDINGS_DIR}/scr/lv_hal
-    ${LV_BINDINGS_DIR}/scr/lv_misc
-    ${LV_BINDINGS_DIR}/scr/lv_themes
-    ${LV_BINDINGS_DIR}/scr/lv_whidgets
-)
 file(GLOB_RECURSE MICROPY_SOURCE_LVGL ${MICROPY_DIR}/lib/lv_bindings/lvgl/src/*.c)
+# add_subdirectory(${LV_DIR} ${CMAKE_BINARY_DIR}/lvgl)
 
 
 target_sources(${MICROPY_TARGET} PRIVATE
