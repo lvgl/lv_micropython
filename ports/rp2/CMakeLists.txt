@@ -171,11 +171,8 @@ set(MICROPY_CROSS_FLAGS -march=armv7m)
 set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
 set(LV_BINDINGS_DIR ${MICROPY_DIR}/lib/lv_bindings)
-set(LV_DIR ${LV_BINDINGS_DIR}/lvgl)
 
 file(GLOB_RECURSE MICROPY_SOURCE_LVGL ${MICROPY_DIR}/lib/lv_bindings/lvgl/src/*.c)
-# add_subdirectory(${LV_DIR} ${CMAKE_BINARY_DIR}/lvgl)
-
 
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}
