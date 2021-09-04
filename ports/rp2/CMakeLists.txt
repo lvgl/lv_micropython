@@ -55,18 +55,6 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 
 add_executable(${MICROPY_TARGET})
 
-##
-## LVGL
-##
-    if(NOT CMAKE_BUILD_EARLY_EXPANSION)
-        include(${MICROPY_DIR}/lib/lv_bindings/mkrules.cmake)
-    endif()
-    # add LVGL to Micropython sources
-    add_subdirectory(${MICROPY_DIR}/lib/lv_bindings/lvgl ${CMAKE_BINARY_DIR}/lvgl)
-    # generate the bindings; must be done here, not in lv_bindings/lvgl/CMakeLists.txt
-    all_lv_bindings()
-    # NB: LV_SRC *must* be added to MICROPY_SOURCE_QSTR below
-
 
 set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_SOURCE_DIR}/qstrdefsport.h
@@ -138,7 +126,6 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
-    ${LV_SRC}
 )
 
 set(PICO_SDK_COMPONENTS
