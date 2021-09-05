@@ -55,7 +55,6 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 
 add_executable(${MICROPY_TARGET})
 
-
 set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_SOURCE_DIR}/qstrdefsport.h
 )
@@ -166,7 +165,6 @@ set(PICO_SDK_COMPONENTS
 set(MICROPY_CROSS_FLAGS -march=armv7m)
 set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 
-
 target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
@@ -231,5 +229,3 @@ endforeach()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
-
-
