@@ -18,8 +18,10 @@ jobs:
       uses: fiam/arm-none-eabi-gcc@v1
       with:
         release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
-    - name: Update submodules
-      run: git submodule update --init --recursive  
+    - name: Initialize lv_bindings submodule
+      run: git submodule update --init --recursive lib/lv_bindings  
+    - name: Initialize Micropython submodules
+      run: make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build ${{ matrix.board }}
