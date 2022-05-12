@@ -258,6 +258,7 @@ SRC_C += \
 LIB_SRC_C += $(addprefix lib/,\
     lv_bindings/driver/SDL/SDL_monitor.c \
     lv_bindings/driver/SDL/SDL_mouse.c \
+    lv_bindings/driver/SDL/SDL_keyboard.c \
 	lv_bindings/driver/SDL/modSDL.c \
 	$(LIB_SRC_C_EXTRA) \
 	)
