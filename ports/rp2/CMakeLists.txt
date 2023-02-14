@@ -322,6 +322,7 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
+    -Wno-array-bounds
 )
 
 set_source_files_properties(
