@@ -322,7 +322,6 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
-    -Wno-array-bounds
 )
 
 set_source_files_properties(
@@ -351,7 +350,7 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
     MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
     PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
     PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
-    __STDC_NO_ATOMICS__
+    __STDC_NO_ATOMICS__  # cortex-m0+ does not support atomics and pico-sdk does not provide libatomic
 )
 
 target_link_libraries(${MICROPY_TARGET}
