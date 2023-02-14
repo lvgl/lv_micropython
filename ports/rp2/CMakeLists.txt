@@ -354,6 +354,7 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
 
 target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
+    "-latomic"
 )
 
 if (MICROPY_HW_ENABLE_DOUBLE_TAP)
