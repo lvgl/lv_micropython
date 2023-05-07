@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-
+set(USER_C_MODULES  ../../lib/lv_bindings/bindings.cmake)
 # Set build type to reduce firmware size
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE MinSizeRel)

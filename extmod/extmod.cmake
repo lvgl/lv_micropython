@@ -51,10 +51,12 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/virtpin.c
     ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
     ${MICROPY_EXTMOD_DIR}/st7789/st7789.c
+    ${MICROPY_EXTMOD_DIR}/st7789/mpfile.c
+    ${MICROPY_EXTMOD_DIR}/st7789/png/pngle.c
+    ${MICROPY_EXTMOD_DIR}/st7789/png/miniz.c
 )
 
 # Library for btree module and associated code
-
 if(MICROPY_PY_BTREE)
     set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
 
