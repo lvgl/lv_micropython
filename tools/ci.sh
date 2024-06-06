@@ -19,7 +19,7 @@ function ci_gcc_arm_setup {
 
 function ci_code_formatting_setup {
     sudo apt-get install uncrustify
-    pip3 install black
+    pip3 install --break-system-packages black
     uncrustify --version
     black --version
 }
@@ -76,7 +76,7 @@ function ci_code_size_build {
 # .mpy file format
 
 function ci_mpy_format_setup {
-    sudo pip3 install pyelftools
+    sudo pip3 install --break-system-packages pyelftools
 }
 
 function ci_mpy_format_test {
@@ -105,7 +105,7 @@ function ci_cc3200_build {
 # ports/esp32
 
 function ci_esp32_setup_helper {
-    pip3 install pyelftools
+    pip3 install --break-system-packages pyelftools
     git clone https://github.com/espressif/esp-idf.git
     git -C esp-idf checkout $1
     git -C esp-idf submodule update --init \
@@ -158,7 +158,7 @@ function ci_esp32_build {
 # ports/esp8266
 
 function ci_esp8266_setup {
-    sudo pip install pyserial esptool==3.3.1
+    sudo pip install --break-system-packages pyserial esptool==3.3.1
     wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
     # Remove this esptool.py so pip version is used instead
@@ -468,8 +468,8 @@ function ci_unix_standard_run_tests {
 }
 
 function ci_unix_coverage_setup {
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
+    sudo pip3 install --break-system-packages setuptools
+    sudo pip3 install --break-system-packages pyelftools
     gcc --version
     python3 --version
 }
@@ -516,8 +516,8 @@ function ci_unix_32bit_setup {
     sudo dpkg --add-architecture i386
     sudo apt-get update
     sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
-    sudo pip3 install setuptools
-    sudo pip3 install pyelftools
+    sudo pip3 install --break-system-packages setuptools
+    sudo pip3 install --break-system-packages pyelftools
     gcc --version
     python3 --version
 }
