@@ -108,7 +108,6 @@ set(IDF_COMPONENTS
     bootloader_support
     bt
     driver
-    esp_adc_cal
     esp_common
     esp_eth
     esp_event
@@ -120,20 +119,26 @@ set(IDF_COMPONENTS
     log
     lwip
     mbedtls
-    mdns
     newlib
     nvs_flash
     sdmmc
     soc
     spi_flash
-    tcpip_adapter
     ulp
     vfs
     xtensa
     esp_http_client
     esp-tls
-    nghttp
 )
+
+if(IDF_VERSION_MAJOR GREATER_EQUAL 5)
+    list(APPEND IDF_COMPONENTS esp_adc)
+else()
+    list(APPEND IDF_COMPONENTS esp_adc_cal)
+    list(APPEND IDF_COMPONENTS mdns)
+    list(APPEND IDF_COMPONENTS tcpip_adapter)
+    list(APPEND IDF_COMPONENTS nghttp)
+endif()
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
     list(APPEND IDF_COMPONENTS esp_netif)
@@ -150,18 +155,23 @@ if(IDF_VERSION_MINOR GREATER_EQUAL 3 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
     list(APPEND IDF_COMPONENTS hal)
 endif()
 
-if(IDF_TARGET STREQUAL "esp32")
-    list(APPEND IDF_COMPONENTS esp32)
-elseif(IDF_TARGET STREQUAL "esp32c3")
-    list(APPEND IDF_COMPONENTS esp32c3)
-    list(APPEND IDF_COMPONENTS riscv)
-elseif(IDF_TARGET STREQUAL "esp32s2")
-    list(APPEND IDF_COMPONENTS esp32s2)
-    list(APPEND IDF_COMPONENTS tinyusb)
-elseif(IDF_TARGET STREQUAL "esp32s3")
-    list(APPEND IDF_COMPONENTS esp32s3)
-    list(APPEND IDF_COMPONENTS tinyusb)
+if(IDF_VERSION_MAJOR GREATER_EQUAL 5)
+    list(APPEND IDF_COMPONENTS soc)
+else()
+    if(IDF_TARGET STREQUAL "esp32")
+        list(APPEND IDF_COMPONENTS esp32)
+    elseif(IDF_TARGET STREQUAL "esp32c3")
+        list(APPEND IDF_COMPONENTS esp32c3)
+        list(APPEND IDF_COMPONENTS riscv)
+    elseif(IDF_TARGET STREQUAL "esp32s2")
+        list(APPEND IDF_COMPONENTS esp32s2)
+        list(APPEND IDF_COMPONENTS tinyusb)
+    elseif(IDF_TARGET STREQUAL "esp32s3")
+        list(APPEND IDF_COMPONENTS esp32s3)
+        list(APPEND IDF_COMPONENTS tinyusb)
+    endif()
 endif()
+
 
 # Register the main IDF component.
 idf_component_register(
