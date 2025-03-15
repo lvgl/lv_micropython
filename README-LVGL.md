@@ -19,10 +19,16 @@ Original micropython README: https://github.com/micropython/micropython/blob/mas
 ## Relationship between `lv_micropython` and `lv_binding_micropython`
 
 Originally, `lv_micropython` was created as an example of how to use [lv_binding_micropython](https://github.com/lvgl/lv_binding_micropython) on a Micropython fork.  
-As such, we try to keep changes here as minimal as possible and we try to keep it in sync with Micropython upstream releases. We also try to add changes to `lv_binding_micropython` instead of to `lv_micropython`, when possible. (for example we keep all drivers in `lv_binding_micropython`, the ESP32 CMake functionality etc.)
+
+As such, we try to keep changes here as minimal as possible and we try to keep it in sync with Micropython upstream releases. We also try to add changes to `lv_binding_micropython` instead of to `lv_micropython`, when possible. (for example we keep all drivers in `lv_binding_micropython`,  etc.)
 
 Eventually it turned out that many people prefer using `lv_micropython` directly and only a few use it as a reference to support LVGL on their own Micropython fork.
+
 If you are only starting with Micropython+LVGL, it's recommended that you use `lv_micropython`, while porting a Micropython fork to LVGL is for advanced users.
+
+Actual `lv_micropython` repo is using [LVGL binding](https://github.com/lvgl/lv_binding_micropython) as MicroPython C module. 
+
+More details: https://docs.micropython.org/en/latest/develop/cmodules.html
 
 ## Build Instructions
 
@@ -81,7 +87,8 @@ Python 3 is required, but you can install some other version of python3 instead 
 ### ESP32 port
 
 Install ESP-IDF v5.x: https://docs.espressif.com/projects/esp-idf/en/v5.2.3/esp32/get-started/index.html#manual-installation
-(you can configure ESP-IDF path in [scripts/env-variables-esp32.sh](https://github.com/lvgl/lv_micropython/blob/master/scripts/env-variables-esp32.sh) file)
+
+(you can configure ESP-IDF path in [scripts/env-variables-esp32.sh](./scripts/env-variables-esp32.sh) file)
 
 Build and deploy with scripts:
 
