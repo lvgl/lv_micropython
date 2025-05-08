@@ -46,6 +46,7 @@ INC += -I$(BUILD)
 INC += -I$(VARIANT_DIR)
 
 CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
+CFLAGS += -Wno-unused-function
 CFLAGS += -Os -DNDEBUG
 CFLAGS += $(INC)
 
@@ -95,6 +96,7 @@ JSFLAGS += --js-library library.js
 JSFLAGS += -s SUPPORT_LONGJMP=emscripten
 JSFLAGS += -s MODULARIZE -s EXPORT_NAME=_createMicroPythonModule
 
+
 ################################################################################
 # Source files and libraries.
 
@@ -130,7 +132,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all repl min test test_min
+.PHONY: all repl min test test_min 
 
 all: $(BUILD)/micropython.mjs
 
