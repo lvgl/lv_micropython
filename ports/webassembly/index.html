@@ -46,24 +46,19 @@
     // instantiate term.js
     const term = new Terminal({
       cols: 80, rows: 24,
-      cursorBlink: true
+      cursorBlink: true,
+      convertEol: true
     });
     term.open(document.getElementById('term'));
 
     function writeToTerm(data) {
-  // Split on “\n” and call writeln() for each line
-  data.split('\n').forEach((line, i, arr) => {
-    // writeln() prints the line + a trailing "\r\n"
-    term.writeln(line);
-    // If the original data ended with a newline, writeln() already covered it;
-    // if not, this still works fine because writeln always ends with CRLF.
-  });
+        term.write(data);
 }    
     // load the wasm VM, wiring stdout/stderr into our term
     const mpReady = loadMicroPython({
       stdout: writeToTerm,
       stderr: writeToTerm,
-      linebuffer: true,
+      linebuffer: false,
     });
 
     mpReady.then(mp => {
@@ -76,31 +71,11 @@
         // initialize the builtin REPL state
         mp.replInit();
 
-        // show the first prompt
-        term.write('\r\n>>> ');
-
         // feed each keypress into the µPy REPL processor
         term.onKey(async ({ key, domEvent }) => {
             const code = key.charCodeAt(0);
-
-            // if Enter, move down one line in the terminal
-            if (code === 13) {  // ENTER
-            term.write('\r');
-            // tab
-            } else if (code === 9) {   // TAB
-            term.write('\r');
-            } else if (code === 127) {   // BACKSPACE
-                term.write('\b \b');
-            } else {
-                // otherwise, just echo the character
-                term.write(key);
-            }
-
-            // hand the byte off to the µPy REPL processor
             const done = await mp.replProcessCharWithAsyncify(code);
-            if (code === 13 && !done) {
-                term.write('>>> ');
-            }
+            // TODO: handle if (done) 
         });
     });
 
