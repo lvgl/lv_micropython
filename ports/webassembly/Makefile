@@ -78,7 +78,8 @@ EXPORTED_RUNTIME_METHODS_EXTRA += ,\
 	getValue,\
 	lengthBytesUTF8,\
 	setValue,\
-	stringToUTF8
+	stringToUTF8, \
+	setMainLoop
 
 JSFLAGS += -s EXPORTED_FUNCTIONS="\
 	_free,\
