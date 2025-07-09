@@ -76,7 +76,7 @@
 #endif
 #endif
 
-#define MP_HW_SPI_MAX_XFER_BYTES (4092)
+#define MP_HW_SPI_MAX_XFER_BYTES (4092*4)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
 typedef struct _machine_hw_spi_default_pins_t {
@@ -235,7 +235,8 @@ static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
         .mosi_io_num = self->mosi,
         .sclk_io_num = self->sck,
         .quadwp_io_num = -1,
-        .quadhd_io_num = -1
+        .quadhd_io_num = -1,
+        .max_transfer_sz = MP_HW_SPI_MAX_XFER_BYTES,
     };
 
     spi_device_interface_config_t devcfg = {
