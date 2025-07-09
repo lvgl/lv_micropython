@@ -8,3 +8,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.spiram_sx
     boards/ESP32_GENERIC_S3/sdkconfig.board
 )
+
+set(LV_CFLAGS -DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1)
+
+set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

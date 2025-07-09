@@ -35,12 +35,15 @@
 // - stderr: same behaviour as stdout but for error output.
 // - linebuffer: whether to buffer line-by-line to stdout/stderr.
 export async function loadMicroPython(options) {
-    const { pystack, heapsize, url, stdin, stdout, stderr, linebuffer } =
+    const { pystack, heapsize, url, stdin, stdout, stderr, linebuffer, canvasRef } =
         Object.assign(
             { pystack: 2 * 1024, heapsize: 1024 * 1024, linebuffer: true },
             options,
         );
     let Module = {};
+    if (canvasRef) {
+        Module.canvas = canvasRef;
+    }
     Module.locateFile = (path, scriptDirectory) =>
         url || scriptDirectory + path;
     Module._textDecoder = new TextDecoder();
@@ -105,6 +108,7 @@ export async function loadMicroPython(options) {
         [pystack, heapsize],
     );
     Module.ccall("proxy_c_init", "null", [], []);
+
     return {
         _module: Module,
         PyProxy: PyProxy,
