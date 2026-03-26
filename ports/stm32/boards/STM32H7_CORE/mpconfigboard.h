@@ -53,7 +53,8 @@ extern void lv_deinit(void);
 #endif
 
 #if defined(BOARD_V10)
-// GPIO SDCARD
+// GPIO SDCARD (SDMMC2)
+#define MICROPY_HW_SDCARD_SDMMC (2)
 #define MICROPY_HW_SDCARD_D0    (pin_B14)
 #define MICROPY_HW_SDCARD_D1    (pin_B15)
 #define MICROPY_HW_SDCARD_D2    (pin_B3)
