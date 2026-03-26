@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "DEV190806042.jpg",
+        "DEV190806042_B.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "DEV190806042",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Aliexpress"
+}
