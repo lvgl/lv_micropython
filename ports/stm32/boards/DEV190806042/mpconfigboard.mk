@@ -13,11 +13,11 @@ USER_C_MODULES += ${TOP_DIR}/user_modules/lv_binding_micropython/driver/stm32/st
 
 ifeq ($(USE_MBOOT),1)
 # When using Mboot everything goes after the bootloader
-LD_FILES = boards/FK743M5-XIH6/stm32h743.ld
+LD_FILES = boards/DEV190806042/stm32h743.ld
 TEXT0_ADDR = 0x08020000
 else
 # When not using Mboot everything goes at the start of flash
-LD_FILES = boards/FK743M5-XIH6/stm32h743.ld
+LD_FILES = boards/DEV190806042/stm32h743.ld
 TEXT0_ADDR = 0x08000000
 endif
 
