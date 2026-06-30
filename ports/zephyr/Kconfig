@@ -34,12 +34,54 @@ config MICROPY_HEAP_SIZE
 
 config MICROPY_VFS_FAT
 	bool "FatFS file system"
+	depends on !FAT_FILESYSTEM_ELM
 
 config MICROPY_VFS_LFS1
 	bool "LittleFs version 1 file system"
 
 config MICROPY_VFS_LFS2
 	bool "LittleFs version 2 file system"
+
+config MICROPY_FROZEN_MODULES
+	bool "Enable Frozen Modules"
+	default y if FLASH_MAP || DISK_ACCESS
+
+config MICROPY_FROZEN_MANIFEST
+	string "Path to Frozen Modules manifest.py"
+	depends on MICROPY_FROZEN_MODULES
+	default "boards/manifest.py"
+
+config MICROPY_USB_DEVICE_VID
+	hex "USB VID"
+	default 0x2fe3
+
+config MICROPY_USB_DEVICE_PID
+	hex "USB PID"
+	default 0x0001
+
+choice MICROPY_CONFIG_ROM_LEVEL
+	prompt  "MicroPython Features level"
+	default MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES
+
+	config MICROPY_CONFIG_ROM_LEVEL_MINIMUM
+		bool "Disable all optional features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES
+		bool "Only enable core features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES
+		bool "Enable most common features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES
+		bool "Enable convenience features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES
+		bool "Enable all common features"
+
+	config MICROPY_CONFIG_ROM_LEVEL_EVERYTHING
+		bool "Enable everything"
+
+endchoice
 
 endmenu # MicroPython Options
 

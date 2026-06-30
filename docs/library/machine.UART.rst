@@ -83,7 +83,7 @@ Methods
 
      - *pins* is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
        Any of the pins can be None if one wants the UART to operate with limited functionality.
-       If the RTS pin is given the the RX pin must be given as well. The same applies to CTS.
+       If the RTS pin is given the RX pin must be given as well. The same applies to CTS.
        When no pins are given, then the default set of TX and RX pins is taken, and hardware
        flow control will be disabled. If *pins* is ``None``, no pin assignment will be made.
 
@@ -224,7 +224,8 @@ Methods
 
 
    .. note::
-     - The ESP32 port does not support the option hard=True.
+     - The ESP32 port does not support the option hard=True. It uses Timer(0)
+       for UART.IRQ_RXIDLE, so this timer cannot be used for other means.
 
      - The rp2 port's UART.IRQ_TXIDLE is only triggered when the message
        is longer than 5 characters and the trigger happens when still 5 characters

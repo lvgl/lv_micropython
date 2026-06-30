@@ -665,7 +665,7 @@ L2CAP connection-oriented-channels
 
     Connect to a listening peer on the specified *psm* with local MTU set to *mtu*.
 
-    On successful connection, the the ``_IRQ_L2CAP_CONNECT`` event will be
+    On successful connection, the ``_IRQ_L2CAP_CONNECT`` event will be
     raised, allowing the client to obtain the CID and the local and remote (peer) MTU.
 
     An unsuccessful connection will raise the ``_IRQ_L2CAP_DISCONNECT`` event
@@ -764,4 +764,5 @@ Constructor
     The **value** can be either:
 
     - A 16-bit integer. e.g. ``0x2908``.
+    - An object with the buffer protocol and that is 2, 4 or 16 bytes long, e.g. ``b'\x08\x29'``.
     - A 128-bit UUID string. e.g. ``'6E400001-B5A3-F393-E0A9-E50E24DCCA9E'``.

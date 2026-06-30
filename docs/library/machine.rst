@@ -11,14 +11,6 @@ and unrestricted access to and control of hardware blocks on a system
 malfunction, lockups, crashes of your board, and in extreme cases, hardware
 damage.
 
-.. _machine_callbacks:
-
-A note of callbacks used by functions and class methods of :mod:`machine` module:
-all these callbacks should be considered as executing in an interrupt context.
-This is true for both physical devices with IDs >= 0 and "virtual" devices
-with negative IDs like -1 (these "virtual" devices are still thin shims on
-top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
-
 Memory access
 -------------
 
@@ -62,14 +54,13 @@ Reset related functions
 
 .. function:: reset()
 
-   Resets the device in a manner similar to pushing the external RESET
-   button.
+   :ref:`Hard resets <hard_reset>` the device in a manner similar to pushing the
+   external RESET button.
 
 .. function:: soft_reset()
 
-   Performs a soft reset of the interpreter, deleting all Python objects and
-   resetting the Python heap.  It tries to retain the method by which the user
-   is connected to the MicroPython REPL (eg serial, USB, Wifi).
+   Performs a :ref:`soft reset <soft_reset>` of the interpreter, deleting all
+   Python objects and resetting the Python heap.
 
 .. function:: reset_cause()
 
@@ -172,6 +163,13 @@ Power related functions
 
    Availability: ESP32, WiPy.
 
+.. function:: wake_pins()
+
+   Returns the GPIO pin numbers of those pins which caused wakeup from deep sleep as a
+   tuple of integers.
+
+   Availability: ESP32.
+
 Miscellaneous functions
 -----------------------
 
@@ -261,13 +259,18 @@ Classes
    machine.Signal.rst
    machine.ADC.rst
    machine.ADCBlock.rst
+   machine.DAC.rst
    machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2CTarget.rst
    machine.I2S.rst
+   machine.CAN.rst
    machine.RTC.rst
    machine.Timer.rst
+   machine.Counter.rst
+   machine.Encoder.rst
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst

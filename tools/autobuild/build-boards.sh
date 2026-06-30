@@ -86,6 +86,10 @@ function build_boards {
     done
 }
 
+function build_alif_boards {
+    build_boards modalif.c $1 $2 zip
+}
+
 function build_cc3200_boards {
     build_boards hal/cc3200_hal.c $1 $2 zip
 }
@@ -99,7 +103,7 @@ function build_esp8266_boards {
 }
 
 function build_mimxrt_boards {
-    build_boards modmimxrt.c $1 $2 bin hex
+    build_boards modmimxrt.c $1 $2 bin hex uf2
 }
 
 function build_nrf_boards {

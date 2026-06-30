@@ -32,7 +32,6 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "py/stackctrl.h"
 #include "shared/runtime/pyexec.h"
 
 void __stack_chk_fail(void);
@@ -73,10 +72,7 @@ int main(int argc, char **argv) {
     mp_pystack_init(pystack, &pystack[1024]);
     #endif
 
-    #if MICROPY_STACK_CHECK
-    mp_stack_ctrl_init();
-    mp_stack_set_limit(48 * 1024);
-    #endif
+    mp_cstack_init_with_sp_here(48 * 1024);
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
@@ -119,18 +115,13 @@ mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-
 void nlr_jump_fail(void *val) {
     while (1) {
         ;
     }
 }
 
-void NORETURN __fatal_error(const char *msg) {
+void MP_NORETURN __fatal_error(const char *msg) {
     while (1) {
         ;
     }

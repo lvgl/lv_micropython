@@ -44,7 +44,6 @@
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_PYSTACK      (1)
-#define MICROPY_STACK_CHECK         (0)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
@@ -75,12 +74,6 @@
 #define MICROPY_PY_JSFFI (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
-
 // Whether the VM will periodically call mp_js_hook(), which checks for
 // interrupt characters on stdin (or equivalent input).
 #ifndef MICROPY_VARIANT_ENABLE_JS_HOOK
@@ -103,14 +96,6 @@
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// This port is intended to be 32-bit, but unfortunately, int32_t for
-// different targets may be defined in different ways - either as int
-// or as long. This requires different printf formatting specifiers
-// to print such value. So, we avoid int32_t and use int directly.
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MICROPY_HW_BOARD_NAME "JS"

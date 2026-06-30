@@ -43,6 +43,7 @@
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
 #endif
 #endif
+#define MICROPY_STACK_CHECK_MARGIN  (1024)
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
 // optimisations
@@ -75,10 +76,14 @@
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
+#define MICROPY_TIME_SUPPORT_Y1969_AND_BEFORE (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM (MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH || MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI || MICROPY_HW_ROMFS_ENABLE_EXTERNAL_XSPI)
+#endif
 
 // control over Python builtins
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
@@ -92,9 +97,6 @@
 #endif
 
 // extended modules
-#define MICROPY_PY_HASHLIB_MD5      (MICROPY_PY_SSL)
-#define MICROPY_PY_HASHLIB_SHA1     (MICROPY_PY_SSL)
-#define MICROPY_PY_CRYPTOLIB        (MICROPY_PY_SSL)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/stm32/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM (1)
@@ -120,15 +122,29 @@
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
+#ifndef MICROPY_PY_MACHINE_CAN
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_PY_MACHINE_CAN (1)
+#else
+#define MICROPY_PY_MACHINE_CAN (0)
+#endif
+#endif
+#define MICROPY_PY_MACHINE_CAN_INCLUDEFILE "ports/stm32/machine_can.c"
 #define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (MICROPY_HW_ENABLE_HW_I2C)
+#define MICROPY_PY_MACHINE_I2C_TARGET (MICROPY_HW_ENABLE_HW_I2C_TARGET)
+#define MICROPY_PY_MACHINE_I2C_TARGET_INCLUDEFILE "ports/stm32/machine_i2c_target.c"
+#define MICROPY_PY_MACHINE_I2C_TARGET_MAX (4)
+#define MICROPY_PY_MACHINE_I2C_TARGET_HARD_IRQ (1)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "ports/stm32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_RX (I2S_MODE_MASTER_RX)
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_TX (I2S_MODE_MASTER_TX)
 #define MICROPY_PY_MACHINE_I2S_RING_BUF (1)
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/stm32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
 #define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
@@ -146,9 +162,6 @@
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_WEBSOCKET        (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL          (MICROPY_PY_LWIP)
-#ifndef MICROPY_PY_SOCKET
-#define MICROPY_PY_SOCKET           (1)
-#endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
@@ -156,8 +169,19 @@
 #define MICROPY_PY_ONEWIRE          (1)
 #endif
 
+// optional network features
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_SOCKET
+#define MICROPY_PY_SOCKET           (1)
+#endif
+
+#ifndef MICROPY_PY_NETWORK_PPP_LWIP
+#define MICROPY_PY_NETWORK_PPP_LWIP     (0)
+#endif
+#endif
+
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_ENABLE_LFN       (2)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
@@ -193,19 +217,16 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
-#if MICROPY_PY_NETWORK_CYW43
-extern const struct _mp_obj_type_t mp_network_cyw43_type;
-#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
-#else
-#define MICROPY_HW_NIC_CYW43
+// Provide a port-level default of MICROPY_HW_NUM_CAN based on pin definitions
+#ifndef MICROPY_HW_NUM_CAN
+#if defined(MICROPY_HW_CAN3_TX)
+#define MICROPY_HW_NUM_CAN 3
+#elif defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_NUM_CAN 2
+#elif defined(MICROPY_HW_CAN1_TX)
+#define MICROPY_HW_NUM_CAN 1
 #endif
-
-#if MICROPY_PY_NETWORK_WIZNET5K
-extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
-#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
-#else
-#define MICROPY_HW_NIC_WIZNET5K
-#endif
+#endif // MICROPY_HW_NUM_CAN
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
@@ -219,8 +240,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
-    MICROPY_HW_NIC_CYW43 \
-    MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -231,41 +250,7 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-// Assume that if we already defined the obj repr then we also defined these items
-#ifndef MICROPY_OBJ_REPR
-#define UINT_FMT "%u"
-#define INT_FMT "%d"
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-
 typedef long mp_off_t;
-
-#if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        if (pyb_thread_enabled) { \
-            MP_THREAD_GIL_EXIT(); \
-            pyb_thread_yield(); \
-            MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
-        } \
-    } while (0);
-
-#define MICROPY_THREAD_YIELD() pyb_thread_yield()
-#else
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
-    } while (0);
-
-#define MICROPY_THREAD_YIELD()
-#endif
 
 // Configuration for shared/runtime/softtimer.c.
 #define MICROPY_SOFT_TIMER_TICKS_MS uwTick

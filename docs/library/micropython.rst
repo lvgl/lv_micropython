@@ -62,8 +62,33 @@ Functions
    is given then extra information is printed.
 
    The information that is printed is implementation dependent, but currently
-   includes the amount of stack and heap used.  In verbose mode it prints out
-   the entire heap indicating which blocks are used and which are free.
+   includes the amount of stack and heap used. In verbose mode it prints out a
+   summary of the entire heap indicating which blocks are used and which are
+   free.
+
+   The exact output of verbose mode varies between ports, but in general each
+   letter represents a single 16 byte block of memory. Each line of
+   output represents 0x400 bytes or 1KiB of RAM.
+
+   The meaning of each letter:
+
+   ====== =================
+   Symbol Meaning
+   ====== =================
+       .   free block
+       h   head block
+       =   tail block
+       m   marked head block
+       T   tuple
+       L   list
+       D   dict
+       F   float
+       B   byte code
+       M   module
+       S   string or bytes
+       A   bytearray
+   ====== =================
+
 
 .. function:: qstr_info([verbose])
 
@@ -130,6 +155,11 @@ Functions
      a critical region but they will not be executed until that region
      is exited.  An example of a critical region is a preempting interrupt
      handler (an IRQ).
+   - Inside native code functions, scheduled functions are not called unless
+     the native code calls a function that specifically does so.
+   - Certain functions including ``poll.poll``, ``poll.ipoll``,
+     ``time.sleep`` and ``time.sleep_ms`` (including zero-duration sleeps)
+     will call scheduled functions.
 
    A use for this function is to schedule a callback from a preempting IRQ.
    Such an IRQ puts restrictions on the code that runs in the IRQ (for example

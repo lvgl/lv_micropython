@@ -12,10 +12,6 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-giga-r1-wifi"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
-#define UINT_FMT                    "%u"
-#define INT_FMT                     "%d"
-typedef int mp_int_t;               // must be pointer size
-typedef unsigned int mp_uint_t;     // must be pointer size
 
 #define MICROPY_FATFS_EXFAT         (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -29,9 +25,18 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
+#define MICROPY_HW_TIM_IS_RESERVED(id) (id == 1)
+#define MICROPY_GC_SPLIT_HEAP       (1)
+
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI       (1)
+#define MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ          (&spi_bdev.spiflash)
+#define MICROPY_HW_ROMFS_ENABLE_PART0               (1)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       GIGA_board_startup
@@ -40,7 +45,6 @@ void GIGA_board_startup(void);
 #define MICROPY_BOARD_EARLY_INIT    GIGA_board_early_init
 void GIGA_board_early_init(void);
 
-#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) GIGA_board_enter_bootloader()
 void GIGA_board_enter_bootloader(void);
 
@@ -123,8 +127,8 @@ void GIGA_board_low_power(int mode);
 // QSPI flash #1 for storage
 #define MICROPY_HW_QSPI_PRESCALER           (2) // 100MHz
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (27)
-// Reserve 1MiB at the end for compatibility with alternate firmware that places WiFi blob here.
-#define MICROPY_HW_SPIFLASH_SIZE_BITS       (120 * 1024 * 1024)
+// Reserve 4MiB for romfs and 1MiB for WiFi/BT firmware.
+#define MICROPY_HW_SPIFLASH_SIZE_BITS       (88 * 1024 * 1024)
 #define MICROPY_HW_QSPIFLASH_CS             (pyb_pin_QSPI2_CS)
 #define MICROPY_HW_QSPIFLASH_SCK            (pyb_pin_QSPI2_CLK)
 #define MICROPY_HW_QSPIFLASH_IO0            (pyb_pin_QSPI2_D0)
@@ -231,7 +235,7 @@ extern struct _spi_bdev_t spi_bdev;
 // Timing configuration for 200MHz/2=100MHz (10ns)
 #define MICROPY_HW_SDRAM_CLOCK_PERIOD       2
 #define MICROPY_HW_SDRAM_CAS_LATENCY        2
-#define MICROPY_HW_SDRAM_FREQUENCY          (100000) // 100 MHz
+#define MICROPY_HW_SDRAM_FREQUENCY_KHZ      (100000) // 100 MHz
 #define MICROPY_HW_SDRAM_TIMING_TMRD        (2)
 #define MICROPY_HW_SDRAM_TIMING_TXSR        (7)
 #define MICROPY_HW_SDRAM_TIMING_TRAS        (5)
@@ -298,7 +302,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_FMC_D15          (pin_D10)
 
 #define MICROPY_HW_USB_VID                      0x2341
+#ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID                      0x0566
+#endif
 #define MICROPY_HW_USB_PID_CDC_MSC              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC                  (MICROPY_HW_USB_PID)

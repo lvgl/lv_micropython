@@ -28,7 +28,9 @@ class UserFile(io.IOBase):
         return n
 
     def ioctl(self, req, arg):
-        return 0
+        if req == 4:  # MP_STREAM_CLOSE
+            return 0
+        return -1
 
 
 class UserFS:
@@ -51,11 +53,12 @@ class UserFS:
 
 
 # these are the test .mpy files
-valid_header = bytes([77, 6, mpy_arch, 31])
+small_int_bits = 30
+valid_header = bytes([77, 6, (mpy_arch & 0x3F), small_int_bits])
 # fmt: off
 user_files = {
     # bad architecture (mpy_arch needed for sub-version)
-    '/mod0.mpy': bytes([77, 6, 0xfc | mpy_arch, 31]),
+    '/mod0.mpy': bytes([77, 6, 0xfc | (mpy_arch & 3), small_int_bits]),
 
     # test loading of viper and asm
     '/mod1.mpy': valid_header + (

@@ -35,7 +35,7 @@
 	url = https://github.com/bluekitchen/btstack.git
 [submodule "lib/nxp_driver"]
 	path = lib/nxp_driver
-	url = https://github.com/hathach/nxp_driver.git
+	url = https://github.com/micropython/nxp_driver.git
 [submodule "lib/libhydrogen"]
 	path = lib/libhydrogen
 	url = https://github.com/jedisct1/libhydrogen.git
@@ -68,6 +68,12 @@
 [submodule "lib/arduino-lib"]
 	path = lib/arduino-lib
 	url = https://github.com/arduino/arduino-lib-mpy.git
+[submodule "lib/alif_ensemble-cmsis-dfp"]
+	path = lib/alif_ensemble-cmsis-dfp
+	url = https://github.com/alifsemi/alif_ensemble-cmsis-dfp.git
+[submodule "lib/alif-security-toolkit"]
+	path = lib/alif-security-toolkit
+	url = https://github.com/micropython/alif-security-toolkit.git
 [submodule "user_modules/lv_binding_micropython"]
 	path = user_modules/lv_binding_micropython
 	url = https://github.com/lvgl/lv_binding_micropython.git

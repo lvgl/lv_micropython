@@ -5,7 +5,9 @@ SRC_EXTMOD_C += \
 	extmod/machine_adc.c \
 	extmod/machine_adc_block.c \
 	extmod/machine_bitstream.c \
+	extmod/machine_can.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2c_target.c \
 	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
@@ -29,6 +31,7 @@ SRC_EXTMOD_C += \
 	extmod/modjson.c \
 	extmod/modlwip.c \
 	extmod/modmachine.c \
+	extmod/modmarshal.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
 	extmod/modopenamp.c \
@@ -61,6 +64,8 @@ SRC_EXTMOD_C += \
 	extmod/vfs_fat_diskio.c \
 	extmod/vfs_fat_file.c \
 	extmod/vfs_lfs.c \
+	extmod/vfs_rom.c \
+	extmod/vfs_rom_file.c \
 	extmod/vfs_posix.c \
 	extmod/vfs_posix_file.c \
 	extmod/vfs_reader.c \
@@ -203,7 +208,7 @@ endif
 
 ifeq ($(MICROPY_VFS_LFS2),1)
 CFLAGS_EXTMOD += -DMICROPY_VFS_LFS2=1
-CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+CFLAGS_THIRDPARTY += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_DEFINES=extmod/littlefs-include/lfs2_defines.h
 SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
@@ -292,6 +297,7 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	pkcs12.c \
 	pkcs5.c \
 	pkparse.c \
+	pk_ecc.c \
 	pk_wrap.c \
 	pkwrite.c \
 	platform.c \
@@ -450,15 +456,14 @@ CYW43_DIR = lib/cyw43-driver
 GIT_SUBMODULES += $(CYW43_DIR)
 CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_CYW43=1
 SRC_THIRDPARTY_C += $(addprefix $(CYW43_DIR)/src/,\
+	cyw43_bthci_uart.c \
 	cyw43_ctrl.c \
 	cyw43_lwip.c \
 	cyw43_ll.c \
 	cyw43_sdio.c \
+	cyw43_spi.c \
 	cyw43_stats.c \
 	)
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
 
 $(BUILD)/$(CYW43_DIR)/src/cyw43_%.o: CFLAGS += -std=c11
 endif # MICROPY_PY_NETWORK_CYW43
@@ -501,7 +506,7 @@ ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
 	)
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci.c
+ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci_uart.c
 endif
 
 # Include the protobuf-c support functions
@@ -616,6 +621,6 @@ $(BUILD)/$(OPENAMP_DIR)/lib/virtio_mmio/virtio_mmio_drv.o: CFLAGS += -Wno-unused
 # We need to have generated libmetal before compiling OpenAMP.
 $(addprefix $(BUILD)/, $(SRC_OPENAMP_C:.c=.o)): $(BUILD)/openamp/metal/config.h
 
-SRC_THIRDPARTY_C += $(SRC_LIBMETAL_C) $(SRC_OPENAMP_C)
+SRC_THIRDPARTY_C += $(SRC_OPENAMP_C) $(SRC_LIBMETAL_C:$(BUILD)/%=%)
 
 endif # MICROPY_PY_OPENAMP

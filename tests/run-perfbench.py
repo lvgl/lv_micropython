@@ -10,10 +10,13 @@ import sys
 import argparse
 from glob import glob
 
-sys.path.append("../tools")
-import pyboard
-
-prepare_script_for_target = __import__("run-tests").prepare_script_for_target
+from test_utils import (
+    base_path,
+    pyboard,
+    get_test_instance,
+    prepare_script_for_target,
+    create_test_report,
+)
 
 # Paths for host executables
 if os.name == "nt":
@@ -45,7 +48,7 @@ def run_script_on_target(target, script):
     output = b""
     err = None
 
-    if isinstance(target, pyboard.Pyboard):
+    if hasattr(target, "enter_raw_repl"):
         # Run via pyboard interface
         try:
             target.enter_raw_repl()
@@ -90,22 +93,22 @@ def run_benchmark_on_target(target, script):
 
 
 def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
+    test_results = []
     skip_complex = run_feature_test(target, "complex") != "complex"
     skip_native = run_feature_test(target, "native_check") != "native"
-    target_had_error = False
 
     for test_file in sorted(test_list):
         print(test_file + ": ", end="")
 
         # Check if test should be skipped
-        skip = (
-            skip_complex
-            and test_file.find("bm_fft") != -1
-            or skip_native
-            and test_file.find("viper_") != -1
-        )
-        if skip:
-            print("SKIP")
+        skip_reason = None
+        if skip_complex and test_file.endswith(("bm_fft.py", "misc_mandel.py")):
+            skip_reason = "complex not supported"
+        elif skip_native and test_file.find("viper_") != -1:
+            skip_reason = "native not supported"
+        if skip_reason:
+            test_results.append((test_file, "skip", skip_reason))
+            print("SKIP:", skip_reason)
             continue
 
         # Create test script
@@ -122,9 +125,10 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
                 f.write(test_script)
 
         # Process script through mpy-cross if needed
-        if isinstance(target, pyboard.Pyboard) or args.via_mpy:
+        if hasattr(target, "enter_raw_repl") or args.via_mpy:
             crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
             if crash:
+                test_results.append((test_file, "fail", "preparation"))
                 print("CRASH:", test_script_target)
                 continue
         else:
@@ -162,10 +166,13 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
                 error = "FAIL truth"
 
         if error is not None:
-            if not error.startswith("SKIP"):
-                target_had_error = True
+            if error.startswith("SKIP"):
+                test_results.append((test_file, "skip", error))
+            else:
+                test_results.append((test_file, "fail", error))
             print(error)
         else:
+            test_results.append((test_file, "pass", ""))
             t_avg, t_sd = compute_stats(times)
             s_avg, s_sd = compute_stats(scores)
             print(
@@ -179,7 +186,7 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
 
         sys.stdout.flush()
 
-    return target_had_error
+    return test_results
 
 
 def parse_output(filename):
@@ -190,7 +197,13 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if ": " in l and ": SKIP" not in l and "CRASH: " not in l:
+            if (
+                ": " in l
+                and ": SKIP" not in l
+                and "CRASH: " not in l
+                and "skipped: " not in l
+                and "failed: " not in l
+            ):
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -246,17 +259,17 @@ def compute_diff(file1, file2, diff_score):
 def main():
     cmd_parser = argparse.ArgumentParser(description="Run benchmarks for MicroPython")
     cmd_parser.add_argument(
-        "-t", "--diff-time", action="store_true", help="diff time outputs from a previous run"
+        "-m", "--diff-time", action="store_true", help="diff time outputs from a previous run"
     )
     cmd_parser.add_argument(
         "-s", "--diff-score", action="store_true", help="diff score outputs from a previous run"
     )
     cmd_parser.add_argument(
-        "-p", "--pyboard", action="store_true", help="run tests via pyboard.py"
+        "-t", "--test-instance", default="unix", help="the MicroPython instance to test"
     )
-    cmd_parser.add_argument(
-        "-d", "--device", default="/dev/ttyACM0", help="the device for pyboard.py"
-    )
+    cmd_parser.add_argument("--baudrate", default=115200, help="baud rate of the serial device")
+    cmd_parser.add_argument("--user", default="micro", help="telnet login username")
+    cmd_parser.add_argument("--password", default="python", help="telnet login password")
     cmd_parser.add_argument("-a", "--average", default="8", help="averaging number")
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
@@ -264,6 +277,12 @@ def main():
     cmd_parser.add_argument("--heapsize", help="heapsize to use (use default if not specified)")
     cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
     cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
+    cmd_parser.add_argument(
+        "-r",
+        "--result-dir",
+        default=base_path("results"),
+        help="directory for test results",
+    )
     cmd_parser.add_argument(
         "N", nargs=1, help="N parameter (approximate target CPU frequency in MHz)"
     )
@@ -282,15 +301,16 @@ def main():
     M = int(args.M[0])
     n_average = int(args.average)
 
-    if args.pyboard:
-        if not args.mpy_cross_flags:
-            args.mpy_cross_flags = "-march=armv7m"
-        target = pyboard.Pyboard(args.device)
-        target.enter_raw_repl()
-    else:
+    target = get_test_instance(args.test_instance, args.baudrate, args.user, args.password)
+    if target is None:
+        # Use the unix port of MicroPython.
         target = [MICROPYTHON, "-X", "emit=" + args.emit]
         if args.heapsize is not None:
             target.extend(["-X", "heapsize=" + args.heapsize])
+    else:
+        # Use a remote target.
+        if not args.mpy_cross_flags:
+            args.mpy_cross_flags = "-march=armv7m"
 
     if len(args.files) == 0:
         tests_skip = ("benchrun.py",)
@@ -307,13 +327,15 @@ def main():
 
     print("N={} M={} n_average={}".format(N, M, n_average))
 
-    target_had_error = run_benchmarks(args, target, N, M, n_average, tests)
+    os.makedirs(args.result_dir, exist_ok=True)
+    test_results = run_benchmarks(args, target, N, M, n_average, tests)
+    res = create_test_report(args, test_results)
 
-    if isinstance(target, pyboard.Pyboard):
+    if hasattr(target, "exit_raw_repl"):
         target.exit_raw_repl()
         target.close()
 
-    if target_had_error:
+    if not res:
         sys.exit(1)
 
 

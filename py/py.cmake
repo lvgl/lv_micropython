@@ -24,6 +24,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/emitbc.c
     ${MICROPY_PY_DIR}/emitcommon.c
     ${MICROPY_PY_DIR}/emitglue.c
+    ${MICROPY_PY_DIR}/emitinlinerv32.c
     ${MICROPY_PY_DIR}/emitinlinethumb.c
     ${MICROPY_PY_DIR}/emitinlinextensa.c
     ${MICROPY_PY_DIR}/emitnarm.c
@@ -48,15 +49,18 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modio.c
     ${MICROPY_PY_DIR}/modmath.c
     ${MICROPY_PY_DIR}/modmicropython.c
+    ${MICROPY_PY_DIR}/modstring.c
     ${MICROPY_PY_DIR}/modstruct.c
     ${MICROPY_PY_DIR}/modsys.c
     ${MICROPY_PY_DIR}/modthread.c
     ${MICROPY_PY_DIR}/moderrno.c
+    ${MICROPY_PY_DIR}/modweakref.c
     ${MICROPY_PY_DIR}/mpprint.c
     ${MICROPY_PY_DIR}/mpstate.c
     ${MICROPY_PY_DIR}/mpz.c
     ${MICROPY_PY_DIR}/nativeglue.c
     ${MICROPY_PY_DIR}/nlr.c
+    ${MICROPY_PY_DIR}/nlraarch64.c
     ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
     ${MICROPY_PY_DIR}/nlrrv32.c
@@ -71,6 +75,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objattrtuple.c
     ${MICROPY_PY_DIR}/objbool.c
     ${MICROPY_PY_DIR}/objboundmeth.c
+    ${MICROPY_PY_DIR}/objcode.c
     ${MICROPY_PY_DIR}/objcell.c
     ${MICROPY_PY_DIR}/objclosure.c
     ${MICROPY_PY_DIR}/objcomplex.c
@@ -103,6 +108,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/objstr.c
     ${MICROPY_PY_DIR}/objstringio.c
     ${MICROPY_PY_DIR}/objstrunicode.c
+    ${MICROPY_PY_DIR}/objtemplate.c
     ${MICROPY_PY_DIR}/objtuple.c
     ${MICROPY_PY_DIR}/objtype.c
     ${MICROPY_PY_DIR}/objzip.c

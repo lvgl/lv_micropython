@@ -33,6 +33,9 @@ ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
 
+# Confirm the provided path exists, show abspath if not to make it clearer to fix.
+$(if $(wildcard $(USER_C_MODULES)/.),,$(error USER_C_MODULES doesn't exist: $(abspath $(USER_C_MODULES))))
+
 # C/C++ files that are included in the QSTR/module build
 SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
@@ -44,6 +47,7 @@ SRC_USERMOD_LIB_ASM :=
 CFLAGS_USERMOD :=
 CXXFLAGS_USERMOD :=
 LDFLAGS_USERMOD :=
+LIBS_USERMOD :=
 
 # Backwards compatibility with older user c modules that set SRC_USERMOD
 # added to SRC_USERMOD_C below
@@ -66,6 +70,7 @@ SRC_USERMOD_PATHFIX_LIB_ASM += $(patsubst $(USER_C_MODULES)/%.S,%.S,$(SRC_USERMO
 CFLAGS += $(CFLAGS_USERMOD)
 CXXFLAGS += $(CXXFLAGS_USERMOD)
 LDFLAGS += $(LDFLAGS_USERMOD)
+LIBS += $(LIBS_USERMOD)
 
 SRC_QSTR += $(SRC_USERMOD_PATHFIX_C) $(SRC_USERMOD_PATHFIX_CXX)
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_C:.c=.o))
@@ -120,6 +125,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	emitnxtensawin.o \
 	asmrv32.o \
 	emitnrv32.o \
+	emitinlinerv32.o \
 	emitndebug.o \
 	formatfloat.o \
 	parsenumbase.o \
@@ -145,6 +151,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objboundmeth.o \
 	objcell.o \
 	objclosure.o \
+	objcode.o \
 	objcomplex.o \
 	objdeque.o \
 	objdict.o \
@@ -175,6 +182,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objstr.o \
 	objstrunicode.o \
 	objstringio.o \
+	objtemplate.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
@@ -193,10 +201,12 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	modmath.o \
 	modcmath.o \
 	modmicropython.o \
+	modstring.o \
 	modstruct.o \
 	modsys.o \
 	moderrno.o \
 	modthread.o \
+	modweakref.o \
 	vm.o \
 	bc.o \
 	showbc.o \
@@ -247,7 +257,7 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
 
 # build a list of registered modules for py/objmodule.c.
-$(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
+$(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected $(PY_SRC)/makemoduledefs.py
 	@$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py $< > $@
 

@@ -25,6 +25,8 @@
  */
 
 #include "py/mphal.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 #include "shared/runtime/semihosting_arm.h"
 #include "uart.h"
 
@@ -32,8 +34,15 @@
 #define USE_UART (1)
 #define USE_SEMIHOSTING (0)
 
+uintptr_t ticks_ms(void);
+uintptr_t ticks_us(void);
+
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    // Not implemented.
+    #if USE_UART
+    if ((poll_flags & MP_STREAM_POLL_RD) && uart_rx_any()) {
+        return MP_STREAM_POLL_RD;
+    }
+    #endif
     return 0;
 }
 
@@ -63,4 +72,41 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     mp_semihosting_tx_strn(str, len);
     #endif
     return len;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return ticks_ms();
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+    return ticks_us();
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    if (ms) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (mp_hal_ticks_ms() - start < ms) {
+        }
+    } else {
+        mp_handle_pending(true);
+    }
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+    mp_uint_t start = mp_hal_ticks_us();
+    while (mp_hal_ticks_us() - start < us) {
+    }
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    return 0;
+}
+
+// Provide a dummy version of mp_hal_get_random() using a LCG
+static uint32_t random_state;
+void mp_hal_get_random(size_t n, uint8_t *buf) {
+    for (size_t i = 0; i < n; ++i) {
+        random_state = random_state * 1664525 + 1013904223;
+        buf[i] = random_state >> 24;
+    }
 }

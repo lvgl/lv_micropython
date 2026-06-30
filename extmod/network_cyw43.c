@@ -143,6 +143,9 @@ static mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_bool(if_active[self->itf]);
     } else {
         bool value = mp_obj_is_true(args[1]);
+        if (!value && self->itf == CYW43_ITF_STA) {
+            cyw43_wifi_leave(self->cyw, self->itf);
+        }
         cyw43_wifi_set_up(self->cyw, self->itf, value, get_country_code());
         if_active[self->itf] = value;
         return mp_const_none;
@@ -583,6 +586,8 @@ static const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IF_AP), MP_ROM_INT(MOD_NETWORK_AP_IF) },
     { MP_ROM_QSTR(MP_QSTR_SEC_OPEN), MP_ROM_INT(CYW43_AUTH_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2), MP_ROM_INT(CYW43_AUTH_WPA2_MIXED_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA3), MP_ROM_INT(CYW43_AUTH_WPA3_SAE_AES_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA2_WPA3), MP_ROM_INT(CYW43_AUTH_WPA3_WPA2_AES_PSK) },
 
     { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(PM_NONE) },
     { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(PM_PERFORMANCE) },

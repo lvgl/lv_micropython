@@ -55,6 +55,57 @@ The :mod:`rp2` module::
 
     import rp2
 
+Networking
+----------
+
+WLAN
+^^^^
+
+.. note::
+   This section applies only to devices that include WiFi support, such as the `Pico W`_ and `Pico 2 W`_.
+
+The :class:`network.WLAN` class in the :mod:`network` module::
+
+    import network
+
+    wlan = network.WLAN()       # create station interface (the default, see below for an access point interface)
+    wlan.active(True)           # activate the interface
+    wlan.scan()                 # scan for access points
+    wlan.isconnected()          # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')          # get the interface's MAC address
+    wlan.ipconfig('addr4')      # get the interface's IPv4 addresses
+
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
+    ap.config(ssid='RP2-AP')              # set the SSID of the access point
+    ap.config(max_clients=10)             # set how many clients can connect to the network
+    ap.active(True)                       # activate the interface
+
+A useful function for connecting to your local WiFi network is::
+
+    def do_connect():
+        import machine, network
+        wlan = network.WLAN()
+        wlan.active(True)
+        if not wlan.isconnected():
+            print('connecting to network...')
+            wlan.connect('ssid', 'key')
+            while not wlan.isconnected():
+                machine.idle()
+        print('network config:', wlan.ipconfig('addr4'))
+
+Once the network is established the :mod:`socket <socket>` module can be used
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
+convenient HTTP requests.
+
+After a call to ``wlan.connect()``, the device will by default retry to connect
+**forever**, even when the authentication failed or no AP is in range.
+``wlan.status()`` will return ``network.STAT_CONNECTING`` in this state until a
+connection succeeds or the interface gets disabled.
+
+.. _Pico W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#picow-technical-specification
+.. _Pico 2 W: https://www.raspberrypi.com/documentation/microcontrollers/pico-series.html#pico2w-technical-specification
+
 Delay and timing
 ----------------
 
@@ -83,6 +134,12 @@ Use the :mod:`machine.Timer` class::
 
     tim = Timer(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
     tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
+
+By default, timer callbacks run as soft IRQs so they can allocate but
+are prone to GC jitter and delays. Pass ``hard=True`` to the ``Timer()``
+constructor or ``init()`` method to run the callback in hard-IRQ context
+instead. This reduces delay and jitter, but see :ref:`isr_rules` for the
+restrictions that apply to hard-IRQ handlers.
 
 
 .. _rp2_Pins_and_GPIO:
@@ -310,8 +367,9 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 2, 12, 48, 0, 0)) # set a specific date and
+    rtc.datetime((2017, 8, 23, 0, 1, 12, 48, 0)) # set a specific date and
                                                  # time, eg. 2017/8/23 1:12:48
+                                                 # the day-of-week value is ignored
     rtc.datetime() # get date and time
 
 WDT (Watchdog timer)

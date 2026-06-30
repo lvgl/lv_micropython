@@ -1,17 +1,11 @@
-// Deinitions common to all SAMD21 boards
+// Definitions common to all SAMD21 boards
 #include "samd21.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
-#if MICROPY_HW_CODESIZE == 248
-#define SAMD21_EXTRA_FEATURES           1
-#else
-#define SAMD21_EXTRA_FEATURES           0
-#endif
 
 // MicroPython emitters
 #define MICROPY_EMIT_THUMB              (SAMD21_EXTRA_FEATURES)
 #define MICROPY_EMIT_INLINE_THUMB       (SAMD21_EXTRA_FEATURES)
-#define MICROPY_EMIT_THUMB_ARMV7M       (0)
 #define MICROPY_MODULE_BUILTIN_INIT     (1)
 
 // Selected extensions beyond the basic features set.
@@ -77,6 +71,16 @@ unsigned long trng_random_u32(int delay);
 #define MICROPY_PY_DEFLATE              (SAMD21_EXTRA_FEATURES)
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE              (SAMD21_EXTRA_FEATURES)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2C_TARGET
+#define MICROPY_PY_MACHINE_I2C_TARGET   (SAMD21_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_MACHINE_ADC_READ_TIMED
+#define MICROPY_PY_MACHINE_ADC_READ_TIMED (SAMD21_EXTRA_FEATURES)
+#endif
+#ifndef MICROPY_PY_MACHINE_DAC_WRITE_TIMED
+#define MICROPY_PY_MACHINE_DAC_WRITE_TIMED (SAMD21_EXTRA_FEATURES)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_PIN_BOARD_CPU

@@ -12,10 +12,6 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nicla-vision"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
-#define UINT_FMT                    "%u"
-#define INT_FMT                     "%d"
-typedef int mp_int_t;               // must be pointer size
-typedef unsigned int mp_uint_t;     // must be pointer size
 
 #define MICROPY_FATFS_EXFAT         (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -29,9 +25,17 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_MMCARD    (0)
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
+#define MICROPY_HW_TIM_IS_RESERVED(id) (id == 3)
+
+// ROMFS config
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI       (1)
+#define MICROPY_HW_ROMFS_QSPI_SPIFLASH_OBJ          (&spi_bdev.spiflash)
+#define MICROPY_HW_ROMFS_ENABLE_PART0               (1)
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
+#define MICROPY_HW_SPIFLASH_SOFT_RESET              (1)
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       NICLAV_board_startup
@@ -127,8 +131,8 @@ void NICLAV_board_osc_enable(int enable);
 // QSPI flash for storage
 #define MICROPY_HW_QSPI_PRESCALER           (2) // 100MHz
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (27)
-// Reserve 1MiB at the end for compatibility with alternate firmware that places WiFi blob here.
-#define MICROPY_HW_SPIFLASH_SIZE_BITS       (120 * 1024 * 1024)
+// Reserve 4MiB for romfs and 1MiB for WiFi/BT firmware.
+#define MICROPY_HW_SPIFLASH_SIZE_BITS       (88 * 1024 * 1024)
 #define MICROPY_HW_QSPIFLASH_CS             (pyb_pin_QSPI2_CS)
 #define MICROPY_HW_QSPIFLASH_SCK            (pyb_pin_QSPI2_CLK)
 #define MICROPY_HW_QSPIFLASH_IO0            (pyb_pin_QSPI2_D0)
@@ -184,8 +188,8 @@ extern struct _spi_bdev_t spi_bdev;
 
 // FDCAN bus
 #define MICROPY_HW_CAN1_NAME        "FDCAN1"
-#define MICROPY_HW_CAN1_TX          (pin_A10)
-#define MICROPY_HW_CAN1_RX          (pin_A9)
+#define MICROPY_HW_CAN1_TX          (pin_B9)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
 #define MICROPY_HW_CAN_IS_RESERVED(id) (id != PYB_CAN_1)
 
 // LEDs
@@ -223,7 +227,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BLE_UART_BAUDRATE_DOWNLOAD_FIRMWARE (3000000)
 
 #define MICROPY_HW_USB_VID                      0x2341
-#define MICROPY_HW_USB_PID                      0x045F
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID                      0x055F
+#endif
 #define MICROPY_HW_USB_PID_CDC_MSC              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC_HID              (MICROPY_HW_USB_PID)
 #define MICROPY_HW_USB_PID_CDC                  (MICROPY_HW_USB_PID)

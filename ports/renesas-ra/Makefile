@@ -110,7 +110,7 @@ CFLAGS_MCU_RA6M2 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_RA6M5 = $(CFLAGS_CORTEX_M) -mtune=cortex-m33 -mcpu=cortex-m33
 
 ASFLAGS += $(CFLAGS_CORTEX_M) -mcpu=cortex-$(MCU_SERIES)
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 $(CFLAGS_EXTRA)
 #CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(CMSIS_MCU))
 CFLAGS += $(COPT)
@@ -148,18 +148,6 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-# Flags for optional C++ source code
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-
-# TODO make this common -- shouldn't be using these "private" vars from py.mk
-ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
-LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
-LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
-endif
-
-# Hook tinyusb USB interrupt if used to service usb task.
-LDFLAGS += --wrap=dcd_event_handler
-
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 
@@ -183,22 +171,13 @@ SHARED_SRC_C += $(addprefix shared/,\
 	)
 
 # TinyUSB Stack source
-TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
-	src/class/cdc/cdc_device.c \
-	src/class/dfu/dfu_rt_device.c \
-	src/class/hid/hid_device.c \
-	src/class/midi/midi_device.c \
-	src/class/msc/msc_device.c \
-	src/class/usbtmc/usbtmc_device.c \
-	src/class/vendor/vendor_device.c \
-	src/common/tusb_fifo.c \
-	src/device/usbd.c \
-	src/device/usbd_control.c \
+-include $(TOP)/lib/tinyusb/src/tinyusb.mk
+TINYUSB_SRC_C := $(sort $(addprefix lib/tinyusb/, \
+	$(TINYUSB_SRC_C) \
 	src/portable/renesas/rusb2/dcd_rusb2.c \
 	src/portable/renesas/rusb2/hcd_rusb2.c \
 	src/portable/renesas/rusb2/rusb2_common.c \
-	src/tusb.c \
-	)
+	))
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
@@ -250,6 +229,7 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	modrenesas.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
@@ -442,7 +422,8 @@ endef
 
 define GENERATE_BIN
 	$(ECHO) "GEN $(1)"
-	$(Q)$(OBJCOPY) -I ihex -O binary $(2) $(1)
+	$(Q)$(OBJCOPY) -O binary -j .id_code $(2) $(BUILD)/id_code.bin
+	$(Q)$(OBJCOPY) -O binary --remove-section=.id_code $(2) $(1)
 endef
 
 define GENERATE_HEX
@@ -452,7 +433,7 @@ endef
 
 .PHONY:
 
-$(BUILD)/firmware.bin: $(BUILD)/firmware.hex
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(call GENERATE_BIN,$@,$^)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf

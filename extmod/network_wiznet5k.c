@@ -78,6 +78,8 @@
 
 #endif
 
+extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
+
 #ifndef printf
 #define printf(...) mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__)
 #endif
@@ -145,7 +147,7 @@ void mpy_wiznet_yield(void) {
     #if MICROPY_PY_THREAD
     MICROPY_THREAD_YIELD();
     #else
-    mp_handle_pending(true);
+    mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
     #endif
 }
 

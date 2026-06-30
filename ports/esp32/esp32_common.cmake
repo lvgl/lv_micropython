@@ -1,3 +1,9 @@
+# This is the common ESP-IDF "main component" CMakeLists.txt contents for MicroPython.
+#
+# This file is included directly from a main_${IDF_TARGET}/CMakeLists.txt file
+# (or included from an out-of-tree main component CMakeLists.txt for out-of-tree
+# builds.)
+
 # Set location of base MicroPython directory.
 if(NOT MICROPY_DIR)
     get_filename_component(MICROPY_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
@@ -6,6 +12,25 @@ endif()
 # Set location of the ESP32 port directory.
 if(NOT MICROPY_PORT_DIR)
     get_filename_component(MICROPY_PORT_DIR ${MICROPY_DIR}/ports/esp32 ABSOLUTE)
+endif()
+
+# RISC-V specific inclusions
+if(CONFIG_IDF_TARGET_ARCH_RISCV)
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+        ${MICROPY_DIR}/shared/runtime/gchelper_rv32i.s
+    )
+endif()
+
+if(NOT DEFINED MICROPY_PY_TINYUSB)
+    if(CONFIG_IDF_TARGET_ESP32S2 OR CONFIG_IDF_TARGET_ESP32S3 OR CONFIG_IDF_TARGET_ESP32P4)
+        set(MICROPY_PY_TINYUSB ON)
+    endif()
+endif()
+
+# Enable error text compression by default.
+if(NOT MICROPY_ROM_TEXT_COMPRESSION)
+    set(MICROPY_ROM_TEXT_COMPRESSION ON)
 endif()
 
 # Include core source components.
@@ -19,7 +44,9 @@ list(APPEND USER_C_MODULES "${MICROPY_DIR}/user_modules/lv_binding_micropython/m
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     # Enable extmod components that will be configured by extmod.cmake.
     # A board may also have enabled additional components.
-    set(MICROPY_PY_BTREE ON)
+    if (NOT DEFINED MICROPY_PY_BTREE)
+        set(MICROPY_PY_BTREE ON)
+    endif()
 
     include(${MICROPY_DIR}/py/usermod.cmake)
     include(${MICROPY_DIR}/extmod/extmod.cmake)
@@ -55,9 +82,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
-string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/tinyusb)
 if(MICROPY_PY_TINYUSB)
-    set(TINYUSB_SRC "${MICROPY_DIR}/lib/tinyusb/src")
     string(TOUPPER OPT_MCU_${IDF_TARGET} tusb_mcu)
 
     list(APPEND MICROPY_DEF_TINYUSB
@@ -65,25 +90,23 @@ if(MICROPY_PY_TINYUSB)
     )
 
     list(APPEND MICROPY_SOURCE_TINYUSB
-        ${TINYUSB_SRC}/tusb.c
-        ${TINYUSB_SRC}/common/tusb_fifo.c
-        ${TINYUSB_SRC}/device/usbd.c
-        ${TINYUSB_SRC}/device/usbd_control.c
-        ${TINYUSB_SRC}/class/cdc/cdc_device.c
-        ${TINYUSB_SRC}/portable/synopsys/dwc2/dcd_dwc2.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd_cdc.c
         ${MICROPY_DIR}/shared/tinyusb/mp_usbd_descriptor.c
+        ${MICROPY_DIR}/shared/tinyusb/mp_usbd_runtime.c
     )
 
     list(APPEND MICROPY_INC_TINYUSB
-        ${TINYUSB_SRC}
         ${MICROPY_DIR}/shared/tinyusb/
     )
 
-    list(APPEND MICROPY_LINK_TINYUSB
-        -Wl,--wrap=dcd_event_handler
-    )
+    # Build the Espressif tinyusb component with MicroPython shared/tinyusb/tusb_config.h
+    idf_component_get_property(tusb_lib espressif__tinyusb COMPONENT_LIB)
+    target_include_directories(${tusb_lib} PRIVATE
+        ${MICROPY_DIR}/shared/tinyusb
+        ${MICROPY_DIR}
+        ${MICROPY_PORT_DIR}
+        ${MICROPY_BOARD_DIR})
 endif()
 
 list(APPEND MICROPY_SOURCE_PORT
@@ -114,8 +137,10 @@ list(APPEND MICROPY_SOURCE_PORT
     modesp.c
     esp32_nvs.c
     esp32_partition.c
+    esp32_pcnt.c
     esp32_rmt.c
     esp32_ulp.c
+    esp32_ldo.c
     modesp32.c
     machine_hw_spi.c
     mpthreadport.c
@@ -144,6 +169,7 @@ list(APPEND IDF_COMPONENTS
     driver
     esp_adc
     esp_app_format
+    esp_mm
     esp_common
     esp_eth
     esp_event
@@ -173,6 +199,27 @@ list(APPEND IDF_COMPONENTS
     vfs
 )
 
+if($ENV{IDF_VERSION} VERSION_GREATER_EQUAL "5.4")
+    list(APPEND IDF_COMPONENTS
+        esp_driver_touch_sens)
+endif()
+
+# Provide the default LD fragment if not set
+if (MICROPY_USER_LDFRAGMENTS)
+    set(MICROPY_LDFRAGMENTS ${MICROPY_USER_LDFRAGMENTS})
+endif()
+
+if (UPDATE_SUBMODULES)
+    # ESP-IDF checks if some paths exist before CMake does. Some paths don't
+    # yet exist if this is an UPDATE_SUBMODULES pass on a brand new checkout, so remove
+    # any path which might not exist yet. A "real" build will not set UPDATE_SUBMODULES.
+    unset(MICROPY_SOURCE_TINYUSB)
+    unset(MICROPY_SOURCE_EXTMOD)
+    unset(MICROPY_SOURCE_LIB)
+    unset(MICROPY_INC_TINYUSB)
+    unset(MICROPY_INC_CORE)
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
@@ -192,7 +239,7 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
     LDFRAGMENTS
-        linker.lf
+        ${MICROPY_LDFRAGMENTS}
     REQUIRES
         ${IDF_COMPONENTS}
 )
@@ -201,16 +248,22 @@ idf_component_register(
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
 # Define mpy-cross flags, for use with frozen code.
-if(CONFIG_IDF_TARGET_ARCH STREQUAL "xtensa")
-set(MICROPY_CROSS_FLAGS -march=xtensawin)
+if(CONFIG_IDF_TARGET_ARCH_XTENSA)
+    set(MICROPY_CROSS_FLAGS -march=xtensawin)
+elseif(CONFIG_IDF_TARGET_ARCH_RISCV)
+    if (CONFIG_IDF_TARGET_ESP32P4)
+        set(MICROPY_CROSS_FLAGS "-march=rv32imc -march-flags=zcmp")
+    else()
+        set(MICROPY_CROSS_FLAGS -march=rv32imc)
+    endif()
 endif()
 
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
+    ${MICROPY_DEF_COMPONENT}
     ${MICROPY_DEF_CORE}
     ${MICROPY_DEF_BOARD}
     ${MICROPY_DEF_TINYUSB}
-    MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
@@ -220,14 +273,16 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
 
 # Disable some warnings to keep the build output clean.
 target_compile_options(${MICROPY_TARGET} PUBLIC
+    ${MICROPY_COMPILE_COMPONENT}
     -Wno-clobbered
     -Wno-deprecated-declarations
     -Wno-missing-field-initializers
 )
 
-target_link_options(${MICROPY_TARGET} PUBLIC
-     ${MICROPY_LINK_TINYUSB}
-)
+# User C modules don't pick up certain compile options set by the IDF, most
+# importantly the optimisation level.  So set them here.
+idf_build_get_property(idf_compile_options COMPILE_OPTIONS)
+target_compile_options(usermod INTERFACE ${idf_compile_options})
 
 # Additional include directories needed for private NimBLE headers.
 target_include_directories(${MICROPY_TARGET} PUBLIC
@@ -235,8 +290,25 @@ target_include_directories(${MICROPY_TARGET} PUBLIC
 )
 
 # Add additional extmod and usermod components.
-target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
+if (MICROPY_PY_BTREE)
+    target_link_libraries(${MICROPY_TARGET} $<TARGET_OBJECTS:micropy_extmod_btree>)
+    target_link_libraries(${MICROPY_TARGET} "-u abort_")  # micropy_extmod_btree links to this symbol found in MICROPY_TARGET
+endif()
 target_link_libraries(${MICROPY_TARGET} usermod)
+
+# Extra linker options
+# (when wrap symbols are in standalone files, --undefined ensures
+# the linker doesn't skip that file.)
+target_link_options(${MICROPY_TARGET} PUBLIC
+  # Patch LWIP memory pool allocators (see lwip_patch.c)
+  -Wl,--undefined=memp_malloc
+  -Wl,--wrap=memp_malloc
+  -Wl,--wrap=memp_free
+
+  # Enable the panic handler wrapper
+  -Wl,--undefined=esp_panic_handler
+  -Wl,--wrap=esp_panic_handler
+)
 
 # Collect all of the include directories and compile definitions for the IDF components,
 # including those added by the IDF Component Manager via idf_components.yaml.

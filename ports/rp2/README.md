@@ -47,8 +47,10 @@ pass the board name to the build; e.g. for Raspberry Pi Pico W:
 ## Deploying firmware to the device
 
 Firmware can be deployed to the device by putting it into bootloader mode
-(hold down BOOTSEL while powering on or resetting) and then copying
-`firmware.uf2` to the USB mass storage device that appears.
+(hold down BOOTSEL while powering on or resetting) and then either copying
+`firmware.uf2` to the USB mass storage device that appears, or using
+`picotool load -x firmware.elf`.  The latter command can be accessed
+conveniently via `make deploy`.
 
 If MicroPython is already installed then the bootloader can be entered by
 executing `import machine; machine.bootloader()` at the REPL.
@@ -69,7 +71,6 @@ from machine import Pin, Timer
 led = Pin(25, Pin.OUT)
 tim = Timer()
 def tick(timer):
-    global led
     led.toggle()
 
 tim.init(freq=2.5, mode=Timer.PERIODIC, callback=tick)
