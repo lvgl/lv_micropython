@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "FK743M5-XIH6.jpg",
+        "FK743M5-XIH6_B.jpg"
+    ],
+    "mcu": "stm32h7",
+    "product": "FK743M5-XIH6",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Aliexpress"
+}
